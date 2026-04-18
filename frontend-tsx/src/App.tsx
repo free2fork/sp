@@ -71,9 +71,14 @@ export default function App() {
   const [featureIndex, setFeatureIndex] = useState(0);
   const featureSets = React.useMemo(() => [
     [
-      "Scale globally at origin with purely serverless DuckDB and Apache Iceberg infrastructure.",
-      "Workers scale up elastically on demand and sleep when you're done. $0.00 minimum charges.",
-      "Horizontal Fan-out. Distribute compute across thousands of lightweight workers."
+      "Serverless DuckDB core with Apache Iceberg storage.",
+      "Elastic worker scaling on demand. $0.00 idle cost.",
+      "Horizontal Fan-out. Distribute compute across micro-VMs."
+    ],
+    [
+      "Native dbt Core integration for automated lakhouse-modeling.",
+      "Zero-Trust secrets management. We carry no permanent keys.",
+      "TPC-H SF1000 Verified. Performance at exabyte scale."
     ],
     [
       "Zero warehouse stress. Pay for compute, not Scala overhead.",
@@ -84,11 +89,6 @@ export default function App() {
       "Built-in dbt Runner. Point at a Git repo and we materialize the lakehouse automatically.",
       "Full Browser SQL console. Query instantly with a high-fidelity IDE and catalog browser.",
       "Easily bring external S3 data or connect to other systems. Import .csv or parquet files."
-    ],
-    [
-      "TPC-H verified. Run complex decision-support queries at scale with sub-5s latency.",
-      "Battle-tested on SF-100. Fast multi-table joins and correlated subqueries.",
-      "Production SQL engine. ACID transactions on Iceberg with DuckDB performance."
     ]
   ], []);
 
@@ -974,7 +974,7 @@ export default function App() {
           </div>
         ) : showLanding ? (
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '100px 40px 40px 40px' }}>
-            <div style={{ display: 'flex', width: '100%', maxWidth: '1200px', alignItems: 'flex-start', justifyContent: 'space-between', gap: 'clamp(20px, 5vw, 80px)', padding: '0 40px', textAlign: 'left', minHeight: 0, transform: 'translateY(-30px)' }}>
+            <div style={{ display: 'flex', width: '100%', maxWidth: '1200px', alignItems: 'flex-start', justifyContent: 'space-between', gap: 'clamp(20px, 5vw, 80px)', padding: '0 40px', textAlign: 'left', minHeight: 0, transform: 'translateY(-50px)' }}>
 
 
               {/* Left Column: Core Branding */}
@@ -1001,13 +1001,13 @@ export default function App() {
               </div>
 
               {/* Right Column: Features Card with Animation */}
-              <div style={{ display: 'flex', flexDirection: 'column', flex: 1, maxWidth: '500px' }}>
-                <div className="hero-feature-card" style={{ width: '100%', height: '480px', padding: '60px 40px', position: 'relative', overflow: 'hidden', marginBottom: '20px' }}>
-                  <ul key={featureIndex} style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '36px', animation: 'featureFade 0.6s ease-out' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', flex: 1, maxWidth: '440px' }}>
+                <div className="hero-feature-card" style={{ width: '100%', height: '400px', padding: '48px 32px', position: 'relative', overflow: 'hidden', marginBottom: '20px' }}>
+                  <ul key={featureIndex} style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '28px', animation: 'featureFade 0.6s ease-out' }}>
                     {featureSets[featureIndex].map((feature, i) => (
                       <li key={i} style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
-                        <span style={{ color: 'var(--accent-primary)', fontSize: '30px', lineHeight: '1' }}>•</span>
-                        <p style={{ margin: 0, fontSize: '19px', opacity: 0.9, lineHeight: '1.5' }}>{feature}</p>
+                        <span style={{ color: 'var(--accent-primary)', fontSize: '24px', lineHeight: '1' }}>•</span>
+                        <p style={{ margin: 0, fontSize: '17px', opacity: 0.85, lineHeight: '1.45' }}>{feature}</p>
                       </li>
                     ))}
                   </ul>

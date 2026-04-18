@@ -1542,12 +1542,12 @@ export default function App() {
         )}
 
         {section === 'ingest' && (
-          <div className="query-editor-wrapper" style={{ maxWidth: '680px', flex: 1, paddingBottom: '40px' }}>
+          <div className="query-editor-wrapper" style={{ maxWidth: '680px', flex: 1, paddingBottom: '40px', minHeight: 0, gap: '12px' }}>
             <h2 style={{ marginBottom: '4px' }}>Data Loader</h2>
             <p className="text-muted" style={{ marginBottom: '24px' }}>Ingest datasets from public URLs or upload local files directly into your Iceberg Lakehouse.</p>
 
             {/* Remote URL Ingestion */}
-            <div className="glass-panel" style={{ padding: '32px 28px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div className="glass-panel" style={{ padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <h3 style={{ fontSize: '13px', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.05em', margin: 0 }}>Remote Source</h3>
               <input type="text" className="code-editor" placeholder="https://... or s3://source-bucket/data/*.parquet" value={ingestForm.uri} onChange={e => setIngestForm({ ...ingestForm, uri: e.target.value })} style={{ minHeight: '40px', padding: '12px' }} />
               <input type="text" className="code-editor" placeholder="Target table name (e.g. taxi_data)" value={ingestForm.table} onChange={e => setIngestForm({ ...ingestForm, table: e.target.value })} style={{ minHeight: '40px', padding: '12px' }} />
@@ -1566,7 +1566,7 @@ export default function App() {
             </div>
 
             {/* Local File Upload */}
-            <div className="glass-panel" style={{ padding: '32px 28px', display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '16px' }}>
+            <div className="glass-panel" style={{ padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <h3 style={{ fontSize: '13px', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.05em', margin: 0 }}>Local Upload</h3>
               <div
                 id="file-drop-zone"
@@ -1587,7 +1587,7 @@ export default function App() {
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
                   background: 'rgba(0,0,0,0.15)',
-                  maxHeight: 'min(20vh, 180px)',
+                  maxHeight: 'min(15vh, 160px)',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'center'

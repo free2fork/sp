@@ -111,7 +111,7 @@ def get_iceberg_binds(tenant_ns: str, local: bool = False) -> str:
         TYPE ICEBERG,
         ENDPOINT '{endpoint}'
     );
-    SET search_path = 'enterprise_lake.{tenant_ns}, enterprise_lake.core, main';
+    SET search_path = 'enterprise_lake.{tenant_ns},enterprise_lake.core,main';
     """
 
 @app.get("/me")

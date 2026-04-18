@@ -2313,9 +2313,11 @@ async def export_parquet(req: QueryRequest, background_tasks: BackgroundTasks, u
         # We also enforce a 1,999,999 row limit to protect coordinator resources
         full_export_sql = f"{iceberg_binds}\nCOPY (SELECT * FROM ({clean_sql}) LIMIT 1999999) TO '{tmp_path}' (FORMAT PARQUET)"
         
-        # Execute query
+        # Execute query in a background thread to prevent blocking the event loop
+        # This is CRITICAL for Iceberg because DuckDB will call back into this process 
+        # to fetch metadata while it is executing the query.
         conn = duckdb.connect()
-        conn.execute(full_export_sql)
+        await asyncio.to_thread(conn.execute, full_export_sql)
         conn.close()
 
         background_tasks.add_task(_cleanup_file, tmp_path)

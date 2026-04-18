@@ -1542,12 +1542,12 @@ export default function App() {
         )}
 
         {section === 'ingest' && (
-          <div className="query-editor-wrapper" style={{ maxWidth: '680px', flex: 1, overflowY: 'auto' }}>
+          <div className="query-editor-wrapper" style={{ maxWidth: '680px', flex: 1, paddingBottom: '40px' }}>
             <h2 style={{ marginBottom: '4px' }}>Data Loader</h2>
             <p className="text-muted" style={{ marginBottom: '24px' }}>Ingest datasets from public URLs or upload local files directly into your Iceberg Lakehouse.</p>
 
             {/* Remote URL Ingestion */}
-            <div className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div className="glass-panel" style={{ padding: '32px 28px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <h3 style={{ fontSize: '13px', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.05em', margin: 0 }}>Remote Source</h3>
               <input type="text" className="code-editor" placeholder="https://... or s3://source-bucket/data/*.parquet" value={ingestForm.uri} onChange={e => setIngestForm({ ...ingestForm, uri: e.target.value })} style={{ minHeight: '40px', padding: '12px' }} />
               <input type="text" className="code-editor" placeholder="Target table name (e.g. taxi_data)" value={ingestForm.table} onChange={e => setIngestForm({ ...ingestForm, table: e.target.value })} style={{ minHeight: '40px', padding: '12px' }} />
@@ -1566,7 +1566,7 @@ export default function App() {
             </div>
 
             {/* Local File Upload */}
-            <div className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '16px' }}>
+            <div className="glass-panel" style={{ padding: '32px 28px', display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '16px' }}>
               <h3 style={{ fontSize: '13px', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.05em', margin: 0 }}>Local Upload</h3>
               <div
                 id="file-drop-zone"
@@ -1582,16 +1582,20 @@ export default function App() {
                 style={{
                   border: '2px dashed var(--surface-border-strong)',
                   borderRadius: '10px',
-                  padding: '32px',
+                  padding: '16px',
                   textAlign: 'center',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
-                  background: 'rgba(0,0,0,0.15)'
+                  background: 'rgba(0,0,0,0.15)',
+                  maxHeight: 'min(20vh, 180px)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center'
                 }}
               >
-                <div style={{ fontSize: '2em', marginBottom: '8px' }}>📁</div>
-                <div style={{ fontWeight: 500, marginBottom: '4px' }}>Drop .parquet or .csv files here</div>
-                <div className="text-muted" style={{ fontSize: '13px' }}>or click to browse</div>
+                <div style={{ fontSize: '1.5em', marginBottom: '4px' }}>📁</div>
+                <div style={{ fontWeight: 500, fontSize: '14px' }}>Drop parquet or csv files</div>
+                <div className="text-muted" style={{ fontSize: '12px' }}>or click to browse</div>
               </div>
               <input
                 id="file-input"
@@ -1609,11 +1613,11 @@ export default function App() {
         )}
 
         {section === 'secrets' && (
-          <div className="query-editor-wrapper" style={{ maxWidth: '800px', flex: 1, overflowY: 'auto' }}>
+          <div className="query-editor-wrapper" style={{ maxWidth: '800px', flex: 1, paddingBottom: '40px' }}>
             <h2 style={{ marginBottom: '16px' }}>Federated Connections</h2>
             <p className="text-muted" style={{ marginBottom: '24px' }}>Configure your external Zero-Trust database endpoints natively. shikipond transmits these securely on execution over TLS without persisting any credentials physically on the Backend Coordinator disk.</p>
 
-            <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
+            <div className="glass-panel" style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
               <h3 style={{ margin: 0 }}>Add New Connection</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <input type="text" placeholder="Friendly Name (e.g. remote_pg)" value={newSecret.name} onChange={e => setNewSecret({ ...newSecret, name: e.target.value })} style={{ padding: '8px', borderRadius: '4px', border: '1px solid var(--surface-border)', background: 'var(--surface-glass)', color: 'var(--text-main)' }} />
@@ -1665,7 +1669,7 @@ export default function App() {
             <p className="text-muted" style={{ marginBottom: '24px' }}>Create or join a team to share your Iceberg lakehouse with collaborators.</p>
 
             {orgs.length === 0 ? (
-              <div className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div className="glass-panel" style={{ padding: '32px 28px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <h3 style={{ fontSize: '13px', textTransform: 'uppercase', color: 'var(--text-muted)', letterSpacing: '0.05em', margin: 0 }}>Create Organization</h3>
                 <input type="text" className="code-editor" placeholder="Organization name (e.g. Acme Inc.)" value={newOrgName} onChange={e => { setNewOrgName(e.target.value); setNewOrgSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '')); }} style={{ minHeight: '40px', padding: '12px' }} />
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
@@ -1741,7 +1745,7 @@ export default function App() {
             </div>
             <p className="text-muted" style={{ marginBottom: '20px' }}>Run dbt models on your shikipond lakehouse. Models materialize as queryable tables.</p>
 
-            <div className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '16px' }}>
+            <div className="glass-panel" style={{ padding: '32px 28px', display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '16px' }}>
               <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                 <h3 style={{ fontSize: '12px', textTransform: 'uppercase', color: 'var(--text-muted)', margin: 0, whiteSpace: 'nowrap' }}>Source</h3>
                 <div style={{ display: 'flex', gap: '0', borderRadius: '6px', overflow: 'hidden', border: '1px solid var(--surface-border)', flex: 1 }}>
@@ -1830,7 +1834,7 @@ export default function App() {
           </div>
         )}
         {section === 'support' && (
-          <div className="query-editor-wrapper" style={{ maxWidth: '720px', flex: 1, overflowY: 'auto' }}>
+          <div className="query-editor-wrapper" style={{ maxWidth: '720px', flex: 1, paddingBottom: '40px' }}>
             <h2 style={{ marginBottom: '8px' }}>Support</h2>
             <p className="text-muted" style={{ marginBottom: '28px' }}>Reach out to our team and we'll get back to you as soon as possible.</p>
             <div className="glass-panel" style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '16px' }}>

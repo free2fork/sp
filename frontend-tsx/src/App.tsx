@@ -927,6 +927,14 @@ export default function App() {
           </div>
 
           {showLanding && !session && (
+            <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '12px', alignItems: 'center' }}>
+              <div style={{ padding: '4px 12px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--accent-primary)', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)', cursor: 'pointer' }}>50 GB | STARTER</div>
+              <div style={{ padding: '4px 12px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--accent-primary)', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)', cursor: 'pointer', opacity: 0.85 }}>100 GB | PRO</div>
+              <div style={{ padding: '4px 12px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--accent-primary)', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)', cursor: 'pointer', opacity: 0.7 }}>1 TB | TEAM</div>
+            </div>
+          )}
+
+          {showLanding && !session && (
             <button 
               onClick={() => setShowLanding(false)} 
               style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '16px', fontWeight: '500', cursor: 'pointer', transition: 'color 0.2s', padding: 0 }} 
@@ -973,18 +981,13 @@ export default function App() {
 
           </div>
         ) : showLanding ? (
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '130px 40px 40px 40px' }}>
-            <div style={{ display: 'flex', width: '100%', maxWidth: '1200px', alignItems: 'flex-start', justifyContent: 'space-between', gap: 'clamp(20px, 4vw, 40px)', padding: '0 40px', textAlign: 'left', minHeight: 0, transform: 'translateY(-80px)' }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '60px 40px 40px 40px' }}>
+            <div style={{ display: 'flex', width: '100%', maxWidth: '1200px', alignItems: 'flex-start', justifyContent: 'space-between', gap: 'clamp(20px, 4vw, 40px)', padding: '0 40px', textAlign: 'left', minHeight: 0, transform: 'translateY(-20px)' }}>
 
 
               {/* Left Column: Core Branding */}
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', flex: 1 }}>
-                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-start', gap: '16px', marginBottom: '32px' }}>
-                  <div style={{ padding: '8px 20px', borderRadius: '9999px', background: 'color-mix(in srgb, var(--accent-primary) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--accent-primary) 30%, transparent)', fontSize: '14px', fontWeight: '500', color: 'var(--accent-primary)' }}>50 GB | STARTER <span style={{ opacity: 0.7, marginLeft: '8px' }}>$7.99</span></div>
-                  <div style={{ padding: '8px 20px', borderRadius: '9999px', background: 'color-mix(in srgb, var(--accent-primary) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--accent-primary) 30%, transparent)', fontSize: '14px', fontWeight: '500', color: 'var(--accent-primary)' }}>100 GB | PRO <span style={{ opacity: 0.7, marginLeft: '8px' }}>$14.99</span></div>
-                  <div style={{ padding: '8px 20px', borderRadius: '9999px', background: 'color-mix(in srgb, var(--accent-primary) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--accent-primary) 30%, transparent)', fontSize: '14px', fontWeight: '500', color: 'var(--accent-primary)' }}>1 TB | TEAM <span style={{ opacity: 0.7, marginLeft: '8px' }}>$99.00/10 seats</span></div>
-                  <div style={{ padding: '8px 20px', borderRadius: '9999px', background: 'color-mix(in srgb, var(--accent-primary) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--accent-primary) 30%, transparent)', fontSize: '14px', fontWeight: '500', color: 'var(--accent-primary)' }}>TPC-H Verified</div>
-                </div>
+                
 
                 <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(32px, 7vh, 64px)', marginBottom: 'min(24px, 3vh)', lineHeight: '1.1', textAlign: 'left', letterSpacing: '-0.02em', color: '#fff' }}>
                   Serverless <br />

@@ -1,3 +1,6 @@
+# Project scripts
+scripts/
+
 # Local environments
 .venv/
 env/

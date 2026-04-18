@@ -67,6 +67,7 @@ export default function App() {
   const [aboutStatus, setAboutStatus] = useState('');
 
   // Feature Carousel Logic
+  const [lastExecutedSql, setLastExecutedSql] = useState('');
   const [featureIndex, setFeatureIndex] = useState(0);
   const featureSets = React.useMemo(() => [
     [
@@ -276,6 +277,7 @@ export default function App() {
     if (!cfg.coord) { addLog('Set coordinator URL first', 'err'); return; }
     if (!querySql) return;
     setQueryRunning(true);
+    setLastExecutedSql(querySql);
     setQueryStatus('');
     setResults(null);
     addLog(`query dispatched to ${cfg.workers} workers...`, 'info');
@@ -394,8 +396,48 @@ export default function App() {
   };
 
   // ---- CSV / JSON Export ---------------------------------------------------
-  const exportResults = (format: string) => {
+  const exportResults = async (format: string) => {
     if (!results || results.rows.length === 0) return;
+    
+    if (format === 'parquet') {
+      if (!lastExecutedSql) {
+        addLog('No query history found for Parquet export.', 'err');
+        return;
+      }
+      addLog('Requesting binary Parquet generation from backend...', 'info');
+      try {
+        const headers = await (async () => {
+          const { data } = await supabase.auth.getSession();
+          const token = data.session?.access_token;
+          if (!token) return {};
+          return { 'Authorization': `Bearer ${token}` };
+        })();
+
+        const response = await fetch(cfg.coord + '/export/parquet', {
+          method: 'POST',
+          headers: { ...headers, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sql: lastExecutedSql, compute_tier: computeTier })
+        });
+
+        if (!response.ok) {
+          const err = await response.text();
+          throw new Error(err || 'Failed to generate Parquet file');
+        }
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `shikipond_export_${Date.now()}.parquet`;
+        a.click();
+        URL.revokeObjectURL(url);
+        addLog(`Parquet export complete! Downloaded successfully.`, 'ok');
+      } catch (err: any) {
+        addLog(`Parquet export failed: ${err.message}`, 'err');
+      }
+      return;
+    }
+
     let content: string;
     let mime: string;
     let ext: string;
@@ -409,9 +451,6 @@ export default function App() {
       content = [header, ...rows].join('\n');
       mime = 'text/csv';
       ext = 'csv';
-    } else if (format === 'parquet') {
-      addLog('Direct Parquet binary generation requires duckdb-wasm. Please download as CSV or use backend export.', 'info');
-      return;
     } else {
       content = JSON.stringify(results.rows, null, 2);
       mime = 'application/json';
@@ -1099,7 +1138,7 @@ export default function App() {
                     7-Day Trial Active
                   </div>
                 )}
-                <button className="btn-secondary" onClick={() => setShowUpgradeModal(true)} style={{ marginTop: '8px', padding: '6px', fontSize: '11px', textAlign: 'center' }}>
+                <button className="btn-secondary" onClick={() => setShowUpgradeModal(true)} style={{ marginTop: '8px', padding: '6px', fontSize: '11px', justifyContent: 'center' }}>
                   Upgrade Plan
                 </button>
               </div>

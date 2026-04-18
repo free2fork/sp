@@ -1542,7 +1542,7 @@ export default function App() {
         )}
 
         {section === 'ingest' && (
-          <div className="query-editor-wrapper" style={{ maxWidth: '680px' }}>
+          <div className="query-editor-wrapper" style={{ maxWidth: '680px', flex: 1, overflowY: 'auto' }}>
             <h2 style={{ marginBottom: '4px' }}>Data Loader</h2>
             <p className="text-muted" style={{ marginBottom: '24px' }}>Ingest datasets from public URLs or upload local files directly into your Iceberg Lakehouse.</p>
 
@@ -1609,7 +1609,7 @@ export default function App() {
         )}
 
         {section === 'secrets' && (
-          <div className="query-editor-wrapper" style={{ maxWidth: '800px' }}>
+          <div className="query-editor-wrapper" style={{ maxWidth: '800px', flex: 1, overflowY: 'auto' }}>
             <h2 style={{ marginBottom: '16px' }}>Federated Connections</h2>
             <p className="text-muted" style={{ marginBottom: '24px' }}>Configure your external Zero-Trust database endpoints natively. shikipond transmits these securely on execution over TLS without persisting any credentials physically on the Backend Coordinator disk.</p>
 
@@ -1731,7 +1731,7 @@ export default function App() {
         )}
 
         {section === 'dbt' && (
-          <div className="query-editor-wrapper" style={{ maxWidth: '800px' }}>
+          <div className="query-editor-wrapper" style={{ maxWidth: '800px', flex: 1, overflowY: 'auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
               <h2 style={{ margin: 0 }}>dbt</h2>
               {dbtRunning && <div className="led-indicator online" style={{ width: '8px', height: '8px' }}></div>}
@@ -1830,7 +1830,7 @@ export default function App() {
           </div>
         )}
         {section === 'support' && (
-          <div className="query-editor-wrapper" style={{ maxWidth: '720px' }}>
+          <div className="query-editor-wrapper" style={{ maxWidth: '720px', flex: 1, overflowY: 'auto' }}>
             <h2 style={{ marginBottom: '8px' }}>Support</h2>
             <p className="text-muted" style={{ marginBottom: '28px' }}>Reach out to our team and we'll get back to you as soon as possible.</p>
             <div className="glass-panel" style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '16px' }}>

@@ -91,6 +91,29 @@ async def require_auth(request: Request) -> dict:
     
     return user
 
+def get_iceberg_binds(tenant_ns: str, local: bool = False) -> str:
+    """Centralized SQL to setup S3 secrets and Iceberg catalog with deadlock protection."""
+    tig_key = os.environ.get("AWS_ACCESS_KEY_ID", "")
+    tig_secret = os.environ.get("AWS_SECRET_ACCESS_KEY", "")
+    tig_ep = getattr(tigris, "TIGRIS_ENDPOINT", "https://fly.storage.tigris.dev").replace("https://", "")
+    internal_token = os.environ.get("INTERNAL_AUTH_TOKEN", "duckpond-internal")
+    
+    # DEADLOCK PROTECTION: If local=True (running on coordinator), use localhost.
+    # Otherwise use the public endpoint for workers.
+    endpoint = "http://localhost:8081" if local else "https://duckpond-coordinator.fly.dev"
+    
+    return f"""
+    INSTALL httpfs; LOAD httpfs;
+    INSTALL iceberg; LOAD iceberg;
+    CREATE SECRET IF NOT EXISTS tigris_s3 (TYPE S3, KEY_ID '{tig_key}', SECRET '{tig_secret}', ENDPOINT '{tig_ep}');
+    CREATE SECRET IF NOT EXISTS iceberg_auth (TYPE ICEBERG, TOKEN '{internal_token}');
+    ATTACH IF NOT EXISTS 'duckpond' AS enterprise_lake (
+        TYPE ICEBERG,
+        ENDPOINT '{endpoint}'
+    );
+    SET search_path = 'enterprise_lake.{tenant_ns}, enterprise_lake.core, main';
+    """
+
 @app.get("/me")
 async def me(user: dict = Depends(require_auth)):
     """Return current user info and tenant namespace."""
@@ -1632,18 +1655,7 @@ def _register_dbt_tables(project_dir: str, namespace: str, job_id: str):
         con.close()
         
         # 3. Route through worker for Iceberg creation (same path as data loader)
-        tig_key = os.environ.get('AWS_ACCESS_KEY_ID', '')
-        tig_secret = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
-        tig_ep = os.environ.get('AWS_ENDPOINT_URL_S3', 'https://fly.storage.tigris.dev').replace('https://', '').replace('http://', '')
-        
-        iceberg_binds = f"""
-        CREATE SECRET IF NOT EXISTS tigris_s3 (TYPE S3, KEY_ID '{tig_key}', SECRET '{tig_secret}', ENDPOINT '{tig_ep}');
-        CREATE SECRET IF NOT EXISTS iceberg_auth (TYPE ICEBERG, TOKEN '{os.environ.get("INTERNAL_AUTH_TOKEN", "duckpond-internal")}');
-        ATTACH IF NOT EXISTS 'duckpond' AS enterprise_lake (
-            TYPE ICEBERG,
-            ENDPOINT 'https://duckpond-coordinator.fly.dev'
-        );
-        """
+        iceberg_binds = get_iceberg_binds("core", local=True)
         
         tables_registered = []
         app_name = os.environ.get('WORKER_HOST', 'duckpond-worker.internal').split('.')[0]
@@ -2119,18 +2131,7 @@ async def upload_file(file: UploadFile = File(...), table_name: str = Form(...),
             log.warning(f"Schema inspection failed, using SELECT *: {e}")
     
     # Now ingest from the staged S3 path into Iceberg
-    tig_key = os.environ.get("AWS_ACCESS_KEY_ID", "")
-    tig_secret = os.environ.get("AWS_SECRET_ACCESS_KEY", "")
-    tig_ep = tigris.TIGRIS_ENDPOINT.replace("https://", "")
-    
-    iceberg_binds = f"""
-    CREATE SECRET IF NOT EXISTS tigris_s3 (TYPE S3, KEY_ID '{tig_key}', SECRET '{tig_secret}', ENDPOINT '{tig_ep}');
-    CREATE SECRET IF NOT EXISTS iceberg_auth (TYPE ICEBERG, TOKEN '{os.environ.get("INTERNAL_AUTH_TOKEN", "duckpond-internal")}');
-    ATTACH IF NOT EXISTS 'duckpond' AS enterprise_lake (
-        TYPE ICEBERG,
-        ENDPOINT 'https://duckpond-coordinator.fly.dev'
-    );
-    """
+    iceberg_binds = get_iceberg_binds(tenant_ns, local=True)
     
     staged_uri = f"s3://{tigris.BUCKET_NAME}/{staging_key}"
     read_fn = "read_csv_auto" if ext == '.csv' else "read_parquet"
@@ -2195,18 +2196,7 @@ async def upload_from_staged(request: Request, user: dict = Depends(require_auth
     import re
     table_name = re.sub(r'[^a-zA-Z0-9_]', '_', table_name)
 
-    tig_key = os.environ.get("AWS_ACCESS_KEY_ID", "")
-    tig_secret = os.environ.get("AWS_SECRET_ACCESS_KEY", "")
-    tig_ep = tigris.TIGRIS_ENDPOINT.replace("https://", "")
-
-    iceberg_binds = f"""
-    CREATE SECRET IF NOT EXISTS tigris_s3 (TYPE S3, KEY_ID '{tig_key}', SECRET '{tig_secret}', ENDPOINT '{tig_ep}');
-    CREATE SECRET IF NOT EXISTS iceberg_auth (TYPE ICEBERG, TOKEN '{os.environ.get("INTERNAL_AUTH_TOKEN", "duckpond-internal")}');
-    ATTACH IF NOT EXISTS 'duckpond' AS enterprise_lake (
-        TYPE ICEBERG,
-        ENDPOINT 'https://duckpond-coordinator.fly.dev'
-    );
-    """
+    iceberg_binds = get_iceberg_binds(tenant_ns, local=True)
 
     # Build read_parquet with list of all staged URIs
     # Note: no ORDER BY for multi-file uploads — sorting 60M+ rows would OOM the worker.
@@ -2263,18 +2253,7 @@ async def upload_append(file: UploadFile = File(...), table_name: str = Form(...
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to upload to S3: {str(e)}")
 
-    tig_key = os.environ.get("AWS_ACCESS_KEY_ID", "")
-    tig_secret = os.environ.get("AWS_SECRET_ACCESS_KEY", "")
-    tig_ep = tigris.TIGRIS_ENDPOINT.replace("https://", "")
-
-    iceberg_binds = f"""
-    CREATE SECRET IF NOT EXISTS tigris_s3 (TYPE S3, KEY_ID '{tig_key}', SECRET '{tig_secret}', ENDPOINT '{tig_ep}');
-    CREATE SECRET IF NOT EXISTS iceberg_auth (TYPE ICEBERG, TOKEN '{os.environ.get("INTERNAL_AUTH_TOKEN", "duckpond-internal")}');
-    ATTACH IF NOT EXISTS 'duckpond' AS enterprise_lake (
-        TYPE ICEBERG,
-        ENDPOINT 'https://duckpond-coordinator.fly.dev'
-    );
-    """
+    iceberg_binds = get_iceberg_binds(tenant_ns, local=True)
 
     staged_uri = f"s3://{tigris.BUCKET_NAME}/{staging_key}"
     read_fn = "read_csv_auto" if ext == '.csv' else "read_parquet"
@@ -2323,19 +2302,20 @@ async def export_parquet(req: QueryRequest, background_tasks: BackgroundTasks, u
     tmp_path = f"/tmp/export_{tmp_id}.parquet"
     
     try:
+        # Strip trailing semicolon
+        clean_sql = req.sql.strip().rstrip(';')
+
+        # Setup Iceberg context for the export session
+        iceberg_binds = get_iceberg_binds(tenant_ns, local=True)
+        
         # Use DuckDB directly for binary generation
-        # We wrap the user SQL in the COPY command
-        export_sql = f"COPY ({req.sql}) TO '{tmp_path}' (FORMAT PARQUET)"
+        # We wrap the user SQL in the COPY command AND prepend the catalog setup
+        # We also enforce a 1,999,999 row limit to protect coordinator resources
+        full_export_sql = f"{iceberg_binds}\nCOPY (SELECT * FROM ({clean_sql}) LIMIT 1999999) TO '{tmp_path}' (FORMAT PARQUET)"
         
         # Execute query
-        # Reuse existing _run_sql_logic or similar if available, 
-        # but for simplicity we can use duckdb directly since we are on the coordinator.
         conn = duckdb.connect()
-        # Setup search path if needed (though _execute_query usually handles it)
-        # But for exports, we just run it.
-        # Note: If they use Iceberg tables, we need the worker logic.
-        # For simplicity, we assume Standard SQL (which is what Data Loader/Landing uses).
-        conn.execute(export_sql)
+        conn.execute(full_export_sql)
         conn.close()
 
         background_tasks.add_task(_cleanup_file, tmp_path)
@@ -2349,7 +2329,11 @@ async def export_parquet(req: QueryRequest, background_tasks: BackgroundTasks, u
     except Exception as e:
         if os.path.exists(tmp_path): os.remove(tmp_path)
         log.error(f"Parquet export failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Return a cleaner error if it's a catalog missing issue
+        err_msg = str(e)
+        if "Table with name" in err_msg:
+            err_msg = f"Data Reference Error: {err_msg}. Ensure your table exists in your namespace."
+        raise HTTPException(status_code=500, detail=err_msg)
     finally:
         _rate_limiter.release(tenant_ns)
 
@@ -2954,27 +2938,15 @@ def _execute_query(req: QueryRequest, tenant_ns: str, t0: float):
         req.sql = "\n".join(secret_stmts) + "\n" + req.sql
         
     # 5. Inject Global DuckPond Native REST Catalog dynamically
-    tig_key = os.environ.get("AWS_ACCESS_KEY_ID", "")
-    tig_secret = os.environ.get("AWS_SECRET_ACCESS_KEY", "")
-    tig_ep = tigris.TIGRIS_ENDPOINT.replace("https://", "")
-
-    # Only include ATTACH for write operations that need the Iceberg catalog.
-    # Read queries use iceberg_scan() directly, skipping the slow catalog ATTACH.
-    needs_catalog = "enterprise_lake" in req.sql
-
-    s3_secret = f"CREATE SECRET IF NOT EXISTS tigris_s3 (TYPE S3, KEY_ID '{tig_key}', SECRET '{tig_secret}', ENDPOINT '{tig_ep}');"
-
-    if needs_catalog:
-        iceberg_binds = f"""
-    {s3_secret}
-    CREATE SECRET IF NOT EXISTS iceberg_auth (TYPE ICEBERG, TOKEN '{os.environ.get("INTERNAL_AUTH_TOKEN", "duckpond-internal")}');
-    ATTACH IF NOT EXISTS 'duckpond' AS enterprise_lake (
-        TYPE ICEBERG,
-        ENDPOINT 'https://duckpond-coordinator.fly.dev'
-    );
-    """
-    else:
-        iceberg_binds = f"\n    {s3_secret}\n    "
+    is_local_exec = LOCAL_MODE or req.compute_tier == "micro"
+    iceberg_binds = get_iceberg_binds(tenant_ns, local=is_local_exec)
+    
+    if "enterprise_lake" not in req.sql:
+        # If no catalog needed, we still want S3 secrets but can skip the attachment
+        tig_key = os.environ.get("AWS_ACCESS_KEY_ID", "")
+        tig_secret = os.environ.get("AWS_SECRET_ACCESS_KEY", "")
+        tig_ep = getattr(tigris, "TIGRIS_ENDPOINT", "https://fly.storage.tigris.dev").replace("https://", "")
+        iceberg_binds = f"CREATE SECRET IF NOT EXISTS tigris_s3 (TYPE S3, KEY_ID '{tig_key}', SECRET '{tig_secret}', ENDPOINT '{tig_ep}');"
 
     req.sql = iceberg_binds + "\n" + req.sql
         
@@ -3006,14 +2978,9 @@ async def ingest(req: IngestRequest, user: dict = Depends(require_auth)):
     tig_secret = os.environ.get("AWS_SECRET_ACCESS_KEY", "")
     tig_ep = tigris.TIGRIS_ENDPOINT.replace("https://", "")
     
-    iceberg_binds = f"""
-    CREATE SECRET IF NOT EXISTS tigris_s3 (TYPE S3, KEY_ID '{tig_key}', SECRET '{tig_secret}', ENDPOINT '{tig_ep}');
-    CREATE SECRET IF NOT EXISTS iceberg_auth (TYPE ICEBERG, TOKEN '{os.environ.get("INTERNAL_AUTH_TOKEN", "duckpond-internal")}');
-    ATTACH IF NOT EXISTS 'duckpond' AS enterprise_lake (
-        TYPE ICEBERG,
-        ENDPOINT 'https://duckpond-coordinator.fly.dev'
-    );
-    """
+    # Always use public endpoint for workers in distributed ingest, 
+    # but local if we're in LOCAL_MODE
+    iceberg_binds = get_iceberg_binds(tenant_ns, local=LOCAL_MODE)
     
     sql = f"{iceberg_binds}\nDROP TABLE IF EXISTS enterprise_lake.{tenant_ns}.{req.table_name};\nCREATE TABLE enterprise_lake.{tenant_ns}.{req.table_name} AS SELECT * FROM read_parquet('{req.source_s3_uri}');"
     log.info(f"Dispatching ICEBERG Ingest ({req.compute_tier}): {req.source_s3_uri} -> {tenant_ns}.{req.table_name}")

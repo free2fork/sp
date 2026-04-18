@@ -415,7 +415,7 @@ export default function App() {
 
         const response = await fetch(cfg.coord + '/export/parquet', {
           method: 'POST',
-          headers: { ...headers, 'Content-Type': 'application/json' },
+          headers: { ...headers, 'Content-Type': 'application/json' } as HeadersInit,
           body: JSON.stringify({ sql: lastExecutedSql, compute_tier: computeTier })
         });
 

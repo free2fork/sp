@@ -973,8 +973,8 @@ export default function App() {
 
           </div>
         ) : showLanding ? (
-          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '40px' }}>
-            <div style={{ display: 'flex', width: '100%', maxWidth: '1200px', alignItems: 'flex-start', justifyContent: 'space-between', gap: 'clamp(20px, 5vw, 80px)', padding: '0 40px', textAlign: 'left', minHeight: 0, transform: 'translateY(-100px)' }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '100px 40px 40px 40px' }}>
+            <div style={{ display: 'flex', width: '100%', maxWidth: '1200px', alignItems: 'flex-start', justifyContent: 'space-between', gap: 'clamp(20px, 5vw, 80px)', padding: '0 40px', textAlign: 'left', minHeight: 0, transform: 'translateY(-30px)' }}>
 
 
               {/* Left Column: Core Branding */}

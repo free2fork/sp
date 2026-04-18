@@ -915,8 +915,8 @@ export default function App() {
         </div>
 
         {/* Global Application Header */}
-        <div style={{ position: 'absolute', top: '32px', left: '40px', right: '40px', zIndex: 20, display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '24px' }}>
+        <div style={{ position: 'absolute', top: '32px', left: '40px', right: '40px', zIndex: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
             <button onClick={() => { setShowLanding(true); setShowAboutUs(false); }} style={{ background: 'none', border: 'none', padding: 0, margin: 0, cursor: 'pointer', fontFamily: 'var(--font-display)', fontSize: '30px', fontWeight: 'bold', color: '#fff', outline: 'none' }}>shikipond</button>
             {(!showLanding && !showAboutUs) && (
               <button onClick={() => setShowAboutUs(true)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: '16px', fontWeight: '500', cursor: 'pointer', transition: 'color 0.2s', padding: 0 }} onMouseOver={e => e.currentTarget.style.color = '#fff'} onMouseOut={e => e.currentTarget.style.color = 'var(--text-muted)'}>About Us</button>
@@ -974,7 +974,8 @@ export default function App() {
           </div>
         ) : showLanding ? (
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '40px' }}>
-            <div style={{ display: 'flex', width: '100%', maxWidth: '1200px', alignItems: 'center', justifyContent: 'space-between', gap: 'clamp(20px, 5vw, 80px)', padding: '0 40px', textAlign: 'left', minHeight: 0 }}>
+            <div style={{ display: 'flex', width: '100%', maxWidth: '1200px', alignItems: 'flex-start', justifyContent: 'space-between', gap: 'clamp(20px, 5vw, 80px)', padding: '0 40px', textAlign: 'left', minHeight: 0, transform: 'translateY(-100px)' }}>
+
 
               {/* Left Column: Core Branding */}
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', flex: 1 }}>
@@ -986,7 +987,8 @@ export default function App() {
                 </div>
 
                 <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(32px, 7vh, 64px)', marginBottom: 'min(24px, 3vh)', lineHeight: '1.1', textAlign: 'left', letterSpacing: '-0.02em', color: '#fff' }}>
-                  Serverless Lakehouse <br />
+                  Serverless <br />
+                  Lakehouse <br />
                   <span style={{ color: 'var(--accent-primary)' }}>Engine</span>
                 </h1>
 

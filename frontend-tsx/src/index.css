@@ -1,0 +1,650 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Color Palette — Hokkaido Blue Pond */
+  --bg-core: #040810;
+  --bg-gradient-1: #081420;
+  --bg-gradient-2: #0C1E30;
+  
+  --surface-glass: rgba(8, 20, 38, 0.7);
+  --surface-glass-hover: rgba(12, 30, 52, 0.85);
+  --surface-border: rgba(0, 170, 230, 0.12);
+  --surface-border-strong: rgba(0, 170, 230, 0.25);
+  
+  --text-main: #E8F4FC;
+  --text-muted: #7BAAC4;
+  --text-accent: #00BFFF;
+  
+  --accent-primary: #0099CC;
+  --accent-glow: rgba(0, 153, 204, 0.4);
+  --accent-secondary: #00D4FF;
+  --accent-success: #10B981;
+  --accent-danger: #EF4444;
+  --accent-warm: #E85D3A;
+
+  /* Water variables */
+  --water-1-start: transparent;
+  --water-1-mid: rgba(0, 153, 204, 0.4);
+  --water-1-end: rgba(0, 191, 255, 0.6);
+
+  --water-2-start: transparent;
+  --water-2-mid: rgba(0, 120, 190, 0.35);
+  --water-2-end: rgba(0, 212, 255, 0.5);
+
+  --water-3-start: transparent;
+  --water-3-mid: rgba(0, 170, 230, 0.25);
+  --water-3-end: rgba(0, 153, 204, 0.4);
+
+  /* Fonts */
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Manrope', sans-serif;
+  --font-mono: 'ui-monospace', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+
+  /* Data Table Variables */
+  --surface-table-bg: rgba(0,0,0,0.2);
+  --surface-table-header: rgba(20, 24, 39, 0.95);
+  --text-table-header: var(--text-muted);
+}
+
+body.theme-light {
+  --bg-core: #E6F0F6;
+  --bg-gradient-1: #DFEDF5;
+  --bg-gradient-2: #D1E5EE;
+
+  --surface-glass: rgba(255, 255, 255, 0.6);
+  --surface-glass-hover: rgba(255, 255, 255, 0.8);
+  --surface-border: rgba(0, 153, 204, 0.15);
+  --surface-border-strong: rgba(0, 153, 204, 0.3);
+
+  --text-main: #0B243B;
+  --text-muted: #577991;
+  --text-accent: #007AA3;
+
+  --accent-primary: #007AA3;
+  --accent-glow: rgba(0, 122, 163, 0.3);
+  --accent-secondary: #0099CC;
+  
+  --water-1-mid: rgba(0, 153, 204, 0.2);
+  --water-1-end: rgba(0, 191, 255, 0.4);
+  --water-2-mid: rgba(0, 120, 190, 0.15);
+  --water-2-end: rgba(0, 212, 255, 0.3);
+  --water-3-mid: rgba(0, 170, 230, 0.1);
+  --water-3-end: rgba(0, 153, 204, 0.25);
+
+  --surface-table-bg: rgba(255, 255, 255, 0.5);
+  --surface-table-header: var(--accent-primary);
+  --text-table-header: #FFFFFF;
+}
+
+/* Base is Spring. Adding summer, autumn, winter */
+body.season-summer {
+  --water-1-mid: rgba(0, 180, 150, 0.4);
+  --water-1-end: rgba(0, 200, 120, 0.6);
+  --accent-primary: #00A680;
+  --accent-glow: rgba(0, 166, 128, 0.4);
+}
+body.theme-light.season-summer {
+  --water-1-mid: rgba(0, 180, 150, 0.2);
+  --water-1-end: rgba(0, 200, 120, 0.4);
+  --accent-primary: #008060;
+}
+
+body.season-autumn {
+  --water-1-mid: rgba(200, 120, 40, 0.4);
+  --water-1-end: rgba(230, 90, 20, 0.5);
+  --accent-primary: #D16A28;
+  --accent-glow: rgba(209, 106, 40, 0.4);
+}
+body.theme-light.season-autumn {
+  --water-1-mid: rgba(200, 120, 40, 0.2);
+  --water-1-end: rgba(230, 90, 20, 0.3);
+  --accent-primary: #B2521A;
+}
+
+body.season-winter {
+  --water-1-mid: rgba(200, 230, 255, 0.5);
+  --water-1-end: rgba(240, 250, 255, 0.7);
+  --accent-primary: #9BC6E0;
+  --accent-glow: rgba(155, 198, 224, 0.4);
+  --bg-core: #090C12;
+  --bg-gradient-1: #111A24;
+  --bg-gradient-2: #192736;
+}
+body.theme-light.season-winter {
+  --water-1-mid: rgba(150, 200, 230, 0.3);
+  --water-1-end: rgba(200, 230, 255, 0.5);
+  --accent-primary: #6B9BB8;
+  --bg-core: #F0F6F9;
+  --bg-gradient-1: #E4EEF5;
+  --bg-gradient-2: #D5E4EE;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  background: radial-gradient(ellipse at top right, var(--bg-gradient-2), var(--bg-gradient-1) 40%, var(--bg-core) 70%);
+  background-attachment: fixed;
+  color: var(--text-main);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Glassmorphism Utilities */
+.glass-panel {
+  background: var(--surface-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.glass-pill {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 9999px;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--surface-border-strong);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Custom UI Elements */
+.app-layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  z-index: 0;
+}
+
+.sidebar {
+  width: 56px;
+  min-width: 56px;
+  border-right: 1px solid var(--surface-border);
+  background: transparent; /* Changed from opaque so water flows behind uninterrupted */
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  position: relative;
+}
+
+.sidebar:hover {
+  width: 280px;
+  min-width: 280px;
+}
+
+.sidebar .sidebar-content {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+  width: 280px;
+  min-width: 280px;
+  position: relative;
+  z-index: 2;
+}
+
+.sidebar:hover .sidebar-content {
+  opacity: 1;
+  pointer-events: auto;
+  transition-delay: 0.1s;
+}
+
+/* Collapsed icon strip */
+.sidebar .sidebar-collapsed-icon {
+  opacity: 1;
+  transition: opacity 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.sidebar:hover .sidebar-collapsed-icon {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Water / Pond Animation */
+.pond-bg {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 600px;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+  background: linear-gradient(to bottom, transparent 0%, var(--water-1-start) 20%, var(--water-1-mid) 60%, var(--water-1-end) 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,1) 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,1) 100%);
+}
+
+.pond-wave {
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  width: 200px;
+  height: 60px;
+  margin-left: -100px;
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pond-wave-1 {
+  background: radial-gradient(ellipse at center, transparent 40%, var(--water-1-mid) 70%, transparent 100%);
+  animation: pond-ripple-1 28s infinite cubic-bezier(0.2, 0.5, 0.8, 1);
+}
+
+.pond-wave-2 {
+  background: radial-gradient(ellipse at center, transparent 40%, var(--water-2-mid) 70%, transparent 100%);
+  animation: pond-ripple-2 36s infinite cubic-bezier(0.2, 0.5, 0.8, 1);
+}
+
+.pond-wave-3 {
+  background: radial-gradient(ellipse at center, transparent 40%, var(--water-3-mid) 70%, transparent 100%);
+  animation: pond-ripple-3 45s infinite cubic-bezier(0.2, 0.5, 0.8, 1);
+}
+
+@keyframes pond-ripple-1 {
+  0%   { transform: scale(0.1); opacity: 0; }
+  10%  { opacity: 0.6; }
+  100% { transform: scale(20); opacity: 0; }
+}
+
+@keyframes pond-ripple-2 {
+  0%   { transform: scale(0.1); opacity: 0; }
+  20%  { opacity: 0.5; }
+  100% { transform: scale(22); opacity: 0; }
+}
+
+@keyframes pond-ripple-3 {
+  0%   { transform: scale(0.1); opacity: 0; }
+  15%  { opacity: 0.7; }
+  100% { transform: scale(18); opacity: 0; }
+}
+
+/* Hokkaido Blue Pond Trees */
+.pond-tree {
+  position: absolute;
+  bottom: -20px;
+  width: 3px;
+  background: rgba(220, 230, 240, 0.5); /* Silver stark bark */
+  pointer-events: none;
+  transform-origin: bottom center;
+  border-radius: 4px;
+}
+.pond-tree::before, .pond-tree::after {
+  content: '';
+  position: absolute;
+  width: 2px;
+  background: rgba(220, 230, 240, 0.3);
+  bottom: 40%;
+  border-radius: 2px;
+}
+.pond-tree::before { height: 30%; transform: rotate(20deg); transform-origin: bottom left; }
+.pond-tree::after { height: 25%; transform: rotate(-15deg); transform-origin: bottom right; bottom: 60%; }
+
+.pond-tree.t1 { left: 15%; height: 320px; z-index: 8; transform: rotate(2deg); opacity: 0.7; }
+.pond-tree.t2 { left: 25%; height: 410px; z-index: 11; transform: rotate(-1deg); }
+.pond-tree.t3 { left: 32%; height: 250px; z-index: 9; transform: rotate(4deg); opacity: 0.6; }
+.pond-tree.t4 { left: 48%; height: 480px; z-index: 12; width: 4px; background: rgba(240, 250, 255, 0.8); }
+.pond-tree.t5 { left: 60%; height: 360px; z-index: 10; transform: rotate(-2deg); }
+.pond-tree.t6 { left: 78%; height: 280px; z-index: 8; transform: rotate(3deg); opacity: 0.5; }
+.pond-tree.t7 { left: 88%; height: 430px; z-index: 11; transform: rotate(-1deg); }
+
+
+/* Seasonal Particle Physics Engine */
+.particle-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 15; overflow: hidden; }
+.particle { position: absolute; opacity: 0; }
+
+/* Winter (Snowfall) */
+.season-winter .particle {
+  top: -20px;
+  width: 6px;
+  height: 6px;
+  background: white;
+  border-radius: 50%;
+  filter: blur(1px);
+  animation: snowfall linear infinite;
+}
+
+/* Autumn (Falling Leaves) */
+.season-autumn .particle {
+  top: -20px;
+  width: 14px;
+  height: 8px;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border-radius: 0 50% 0 50%;
+  animation: leaffall linear infinite;
+}
+
+/* Spring / Summer (Foliage Growth on Trees) */
+.season-spring .particle, .season-summer .particle { display: none; }
+
+/* Hero Feature Cards */
+.hero-feature-grid {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 48px;
+  max-width: 1000px;
+  width: 100%;
+  padding: 0 20px;
+}
+.hero-feature-card {
+  flex: 1;
+  padding: 32px;
+  background: rgba(255, 255, 255, 0.025);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  text-align: left;
+  transition: transform 0.3s ease, background 0.3s ease;
+}
+
+@keyframes featureFade {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes featureProgress {
+  0% { scale: 0 1; opacity: 0.5; }
+  90% { opacity: 0.5; }
+  100% { scale: 1 1; opacity: 0; }
+}
+
+.hero-feature-card:hover { 
+  background: rgba(255, 255, 255, 0.04);
+  transform: translateY(-4px);
+}
+.hero-feature-card p { margin: 0; font-size: 16px; opacity: 0.8; line-height: 1.6; }
+
+@media (max-width: 768px) {
+  .hero-feature-grid { flex-direction: column; gap: 16px; margin-bottom: 32px; }
+  .hero-feature-card { padding: 24px; }
+}
+
+/* Expanded Tree Branching */
+.pond-tree .branch {
+  position: absolute;
+  width: 2px;
+  background: rgba(220, 230, 240, 0.3);
+  transform-origin: bottom center;
+  border-radius: 2px;
+}
+
+.pond-tree .foliage {
+  position: absolute;
+  width: 6px; height: 10px;
+  background: #10b981;
+  border-radius: 50% 50% 50% 50% / 100% 100% 30% 30%;
+  transform: scale(0);
+  opacity: 0;
+  transition: opacity 2s ease, transform 2s cubic-bezier(0.34, 1.56, 0.64, 1), background 2s ease;
+  pointer-events: none;
+  box-shadow: 
+    8px -4px 0 #059669, 
+    -6px 6px 0 #34d399, 
+    10px 10px 0 #047857,
+    -10px -6px 0 #10b981,
+    0 12px 0 #065f46;
+}
+
+/* Branch Logic */
+.branch.b1 { height: 25%; bottom: 35%; left: 0; transform: rotate(25deg); }
+.branch.b2 { height: 20%; bottom: 55%; right: 0; transform: rotate(-20deg); }
+.branch.b3 { height: 22%; bottom: 45%; right: 2px; transform: rotate(-35deg); }
+.branch.b4 { height: 18%; bottom: 70%; left: 2px; transform: rotate(15deg); }
+
+/* Position foliage relative to branch tips */
+.branch .foliage { top: -5px; left: -2px; }
+
+/* Season behavior for new branches */
+body.season-autumn .branch, body.season-winter .branch { opacity: 0.8; }
+body.season-spring .pond-tree .foliage, body.season-summer .pond-tree .foliage {
+  opacity: 0.95;
+}
+
+body.season-spring .foliage { transform: scale(1); }
+body.season-summer .foliage {
+  background: #059669;
+  transform: scale(1.4);
+  box-shadow: 
+    8px -4px 0 #059669, 
+    -6px 6px 0 #047857, 
+    10px 10px 0 #047857,
+    -10px -6px 0 #065f46,
+    0 12px 0 #064e3b,
+    -5px -8px 0 #065f46;
+}
+
+@keyframes snowfall {
+  0% { top: -20px; transform: translateX(0); opacity: 0; }
+  10% { opacity: 0.8; }
+  100% { top: 600px; transform: translateX(80px); opacity: 0; }
+}
+
+@keyframes leaffall {
+  0% { top: -20px; opacity: 0; transform: rotate(0deg) translateX(0); }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 600px; opacity: 0; transform: rotate(720deg) translateX(120px) rotateY(180deg); }
+}
+
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  z-index: 2;
+}
+
+/* Layout Modules */
+.header-area {
+  padding: 24px;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.query-editor-wrapper {
+  padding: 24px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+textarea.code-editor, input.code-editor {
+  width: 100%;
+  height: 160px;
+  background: var(--surface-glass);
+  border: 1px solid var(--surface-border);
+  border-radius: 8px;
+  color: var(--text-main);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  padding: 16px;
+  resize: vertical;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+input.code-editor {
+  height: auto;
+  resize: none;
+}
+
+textarea.code-editor:focus, input.code-editor:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 4px var(--accent-glow);
+}
+
+/* Data Grid */
+.data-grid-container {
+  flex: 1;
+  overflow: auto;
+  margin: 0 24px 24px 24px;
+  border: 1px solid var(--surface-border);
+  border-radius: 8px;
+  background: var(--surface-table-bg);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.data-table th {
+  position: sticky;
+  top: 0;
+  background: var(--surface-table-header);
+  backdrop-filter: blur(4px);
+  color: var(--text-table-header);
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--surface-border);
+  z-index: 2;
+}
+
+.data-table td {
+  padding: 12px 16px;
+  font-size: 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  color: var(--text-main);
+  white-space: nowrap;
+}
+
+.data-table tr:hover td {
+  background: rgba(255,255,255,0.03);
+}
+
+/* Buttons */
+.btn-primary {
+  background: var(--accent-primary);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 9999px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(0, 153, 204, 0.35);
+}
+
+.btn-primary:hover {
+  background: #007AA3;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 153, 204, 0.5);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+  border: 1px solid var(--surface-border);
+  padding: 10px 20px;
+  border-radius: 9999px;
+  font-family: var(--font-display);
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn-tertiary {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.btn-tertiary:hover {
+  color: var(--text-main);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Animations */
+@keyframes breathe {
+  0% { opacity: 0.5; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  50% { opacity: 1; box-shadow: 0 0 0 4px rgba(16, 185, 129, 0); }
+  100% { opacity: 0.5; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.led-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-success);
+  margin-right: 8px;
+}
+
+.led-indicator.online {
+  animation: breathe 2s infinite ease-out;
+}
+
+.led-indicator.offline {
+  background: var(--accent-danger);
+  animation: none;
+}
+
+/* Typography Helpers */
+h1, h2, h3 { font-family: var(--font-display); }
+.text-muted { color: var(--text-muted); }
+.flex-row { display: flex; align-items: center; }
+.space-between { justify-content: space-between; }

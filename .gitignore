@@ -1,0 +1,30 @@
+# Local environments
+.venv/
+env/
+venv/
+ENV/
+.claude/
+.gemini/
+
+# macOS junk
+.DS_Store
+
+# JavaScript dependencies
+node_modules/
+dist/
+build/
+
+# Python junk
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Local database files
+*.db
+!coordinator/catalog.db
+
+# Secrets (Should be handled via Fly.io / Vercel secrets dashboard)
+.env
+.env.local
+.env.*.local

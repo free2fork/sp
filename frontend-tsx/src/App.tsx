@@ -142,6 +142,7 @@ export default function App() {
   const [dbtTables, setDbtTables] = useState<string[]>([]);
   const [dbtRunning, setDbtRunning] = useState(false);
   const [dbtJobs, setDbtJobs] = useState<any[]>([]);
+  const [exporting, setExporting] = useState(false);
 
   // Billing UI State
   const [billingProfile, setBillingProfile] = useState<any>(null);
@@ -405,6 +406,7 @@ export default function App() {
         return;
       }
       addLog('Requesting binary Parquet generation from backend...', 'info');
+      setExporting(true);
       try {
         const headers = await (async () => {
           const { data } = await supabase.auth.getSession();
@@ -434,6 +436,8 @@ export default function App() {
         addLog(`Parquet export complete! Downloaded successfully.`, 'ok');
       } catch (err: any) {
         addLog(`Parquet export failed: ${err.message}`, 'err');
+      } finally {
+        setExporting(false);
       }
       return;
     }
@@ -1325,10 +1329,18 @@ export default function App() {
                   <div style={{ position: 'relative' }}>
                     <button
                       className="btn-primary"
-                      onClick={() => setExportMenuOpen(v => !v)}
-                      style={{ gap: '6px', fontSize: '12px', padding: '8px 20px' }}
+                      onClick={() => !exporting && setExportMenuOpen(v => !v)}
+                      disabled={exporting}
+                      style={{ gap: '6px', fontSize: '12px', padding: '8px 20px', position: 'relative', overflow: 'hidden' }}
                     >
-                      ↓ Export As...
+                      {exporting ? (
+                        <>
+                          <div className="spinner-mini" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>↓ Export As...</>
+                      )}
                     </button>
                     {exportMenuOpen && (
                       <div style={{

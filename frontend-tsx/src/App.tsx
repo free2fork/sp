@@ -927,10 +927,10 @@ export default function App() {
           </div>
 
           {showLanding && !session && (
-            <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '12px', alignItems: 'center' }}>
-              <div style={{ padding: '4px 12px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--accent-primary)', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)', cursor: 'pointer' }}>50 GB | STARTER</div>
-              <div style={{ padding: '4px 12px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--accent-primary)', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)', cursor: 'pointer', opacity: 0.85 }}>100 GB | PRO</div>
-              <div style={{ padding: '4px 12px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--accent-primary)', fontSize: '11px', fontWeight: 600, color: 'var(--accent-primary)', cursor: 'pointer', opacity: 0.7 }}>1 TB | TEAM</div>
+            <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '16px', alignItems: 'center' }}>
+              <div style={{ padding: '6px 14px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--accent-primary)', fontSize: '13px', fontWeight: 600, color: 'var(--accent-primary)', cursor: 'pointer' }}>50 GB | STARTER $7.99</div>
+              <div style={{ padding: '6px 14px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--accent-primary)', fontSize: '13px', fontWeight: 600, color: 'var(--accent-primary)', cursor: 'pointer', opacity: 0.85 }}>100 GB | PRO $14.99</div>
+              <div style={{ padding: '6px 14px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--accent-primary)', fontSize: '13px', fontWeight: 600, color: 'var(--accent-primary)', cursor: 'pointer', opacity: 0.7 }}>1 TB | TEAM / 10 seats</div>
             </div>
           )}
 

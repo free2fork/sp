@@ -80,14 +80,16 @@ async def require_auth(request: Request) -> dict:
     user_id = user.get("id", "")
     with sqlite3.connect(CATALOG_DB_PATH) as conn:
         row = conn.execute(
-            "SELECT o.slug FROM org_members m JOIN organizations o ON m.org_id = o.id WHERE m.user_email = ? LIMIT 1",
+            "SELECT o.slug, o.created_by FROM org_members m JOIN organizations o ON m.org_id = o.id WHERE m.user_email = ? LIMIT 1",
             (email,)
         ).fetchone()
     if row:
         user["namespace"] = f"org_{row[0]}"
         user["org_slug"] = row[0]
+        user["billing_owner_id"] = row[1] # Owner of the org pays for everything
     else:
         user["namespace"] = auth_module.get_tenant_namespace(user)
+        user["billing_owner_id"] = user_id
     
     return user
 
@@ -2060,6 +2062,23 @@ def reset_catalog():
         log.warning(f"S3 purge failed: {e}")
     return {"status": "Catalog and S3 iceberg data wiped. Ready for fresh ingestion."}
 
+@app.get("/usage")
+def get_usage(user: dict = Depends(require_auth)):
+    """Return real S3 storage usage for this tenant."""
+    tenant_ns = user.get("namespace", "duckpond")
+    try:
+        s3 = tigris.get_s3_client()
+        prefix = f"iceberg/{tenant_ns}/"
+        total_bytes = 0
+        paginator = s3.get_paginator('list_objects_v2')
+        for page in paginator.paginate(Bucket=tigris.BUCKET_NAME, Prefix=prefix):
+            for obj in page.get("Contents", []):
+                total_bytes += obj.get("Size", 0)
+        return {"used_bytes": total_bytes, "namespace": tenant_ns}
+    except Exception as e:
+        log.warning(f"Usage check failed: {e}")
+        return {"used_bytes": 0, "namespace": tenant_ns}
+
 @app.post("/upload")
 async def upload_file(file: UploadFile = File(...), table_name: str = Form(...), user: dict = Depends(require_auth)):
     """Upload a local .parquet/.csv file to Tigris, then ingest into Iceberg."""
@@ -2070,7 +2089,7 @@ async def upload_file(file: UploadFile = File(...), table_name: str = Form(...),
     # [PHASE 2] Storage Tracking Guard
     try:
         if user.get("id") != "system":
-            db_res = auth_module.supabase.table("billing_profiles").select("storage_limit_bytes").eq("owner_id", user.get("id")).execute()
+            db_res = auth_module.supabase.table("billing_profiles").select("storage_limit_bytes").eq("owner_id", user.get("billing_owner_id")).execute()
             if db_res.data:
                 limit_bytes = db_res.data[0]["storage_limit_bytes"]
                 s3_list = tigris.get_s3_client().list_objects_v2(Bucket=tigris.BUCKET_NAME, Prefix=f"iceberg/{tenant_ns}/")
@@ -2347,7 +2366,7 @@ def query(req: QueryRequest, user: dict = Depends(require_auth)):
     # [PHASE 3] Compute Pre-Flight Quota Ledger Check
     if not LOCAL_MODE and req.compute_tier != "micro" and user.get("id") != "system":
         try:
-            db_res = auth_module.supabase.table("billing_profiles").select("id, compute_credit_balance, compute_rate").eq("owner_id", user.get("id")).execute()
+            db_res = auth_module.supabase.table("billing_profiles").select("id, compute_credit_balance, compute_rate").eq("owner_id", user.get("billing_owner_id")).execute()
             if db_res.data:
                 profile = db_res.data[0]
                 bal = float(profile["compute_credit_balance"])
@@ -2990,7 +3009,7 @@ async def ingest(req: IngestRequest, user: dict = Depends(require_auth)):
     # [PHASE 3] Compute Quota Ledger Check for Ingest Workloads
     if not LOCAL_MODE and req.compute_tier != "micro" and "user" in locals() and user.get("id") != "system":
         try:
-            db_res = auth_module.supabase.table("billing_profiles").select("id, compute_credit_balance, compute_rate").eq("owner_id", user.get("id")).execute()
+            db_res = auth_module.supabase.table("billing_profiles").select("id, compute_credit_balance, compute_rate").eq("owner_id", user.get("billing_owner_id")).execute()
             if db_res.data:
                 profile = db_res.data[0]
                 bal, rate = float(profile["compute_credit_balance"]), float(profile["compute_rate"])
@@ -3046,40 +3065,47 @@ async def stripe_webhook(request: Request):
     # Handle successful checkout
     if event['type'] == 'checkout.session.completed':
         session = event['data']['object']
-        client_ref_id = session.get('client_reference_id') # Our mapped Supabase User ID
-        amount_total = session.get('amount_total', 0) # e.g. 2450 for $24.50
+        client_ref_id = session.get('client_reference_id') 
+        customer_id = session.get('customer')
+        amount_total = session.get('amount_total', 0) 
 
         if not client_ref_id:
             log.warning("Detected successful checkout but no client_reference_id mapped.")
             return {"status": "ignored"}
 
-        # Mathematical Upgrade Rules (Mock Mapping)
+        # Link Stripe Customer to Supabase User for renewal mapping
+        if customer_id:
+            try:
+                stripe.Customer.modify(customer_id, metadata={"supabase_user_id": client_ref_id})
+                log.info(f"Tagged Stripe customer {customer_id} with Supabase ID {client_ref_id}")
+            except Exception as e:
+                log.warning(f"Failed to tag Stripe customer {customer_id}: {e}")
+
+        # Mathematical Upgrade Rules
         plan_tier = 'pro'
-        storage_limit = 100 * (1024 ** 3) # 100 GB default
+        storage_limit = 100 * (1024 ** 3) 
         compute_rate = 0.028
         compute_credit_balance = 0.00
         
-        # Determine strict tier upgrade via cost
-        if amount_total >= 9900: # 99 USD
+        if amount_total >= 11900: # $119.99 USD — Team
             plan_tier = 'team'
-            storage_limit = 1024 * (1024 ** 3) # 1 TB
+            storage_limit = 1024 * (1024 ** 3) 
             compute_rate = 0.025
-            compute_credit_balance = 20.00 # Base bucket of credits
-        elif amount_total >= 2400: # 24 USD
+            compute_credit_balance = 20.00
+        elif amount_total >= 1900: # $19.99 USD — Pro
             plan_tier = 'pro'
-            storage_limit = 100 * (1024 ** 3) # 100 GB
+            storage_limit = 100 * (1024 ** 3) 
             compute_rate = 0.028
-            compute_credit_balance = 5.00 # Base bucket of credits
-        elif amount_total >= 1250: # 12.50 USD
+            compute_credit_balance = 5.00
+        elif amount_total >= 1200: # $12.99 USD — Starter
             plan_tier = 'starter'
-            storage_limit = 50 * (1024 ** 3) # 50 GB default tier bound
+            storage_limit = 50 * (1024 ** 3) 
             compute_rate = 0.028
-            compute_credit_balance = 2.00 # Base bucket of credits
+            compute_credit_balance = 2.00
             
         log.info(f"STRIPE SUCCESS: Upgrading {client_ref_id} to {plan_tier.upper()}")
         
         try:
-            # Wipe Trial, upgrade Storage Limit permanently, reset credits exactly via RPC/update
             auth_module.supabase.table("billing_profiles").update({
                 "plan_tier": plan_tier,
                 "trial_ends_at": None,
@@ -3090,6 +3116,37 @@ async def stripe_webhook(request: Request):
         except Exception as e:
             log.error(f"Failed to mathematically upgrade profile {client_ref_id} post-payment: {e}")
             return JSONResponse(status_code=500, content={"status": "database sync failed"})
+
+    # Handle subscription renewal refills
+    if event['type'] == 'invoice.paid':
+        invoice = event['data']['object']
+        customer_id = invoice.get('customer')
+        amount_paid = invoice.get('amount_paid', 0)
+
+        try:
+            # Fetch user mapping from Customer metadata
+            customer = stripe.Customer.retrieve(customer_id)
+            supabase_user_id = customer.get('metadata', {}).get('supabase_user_id')
+            
+            if not supabase_user_id:
+                log.warning(f"Ignoring recurring payment for customer {customer_id}: no supabase_user_id in metadata.")
+                return {"status": "ignored"}
+
+            # Determine refill amounts
+            refill_balance = 2.00
+            if amount_paid >= 11900: refill_balance = 20.00
+            elif amount_paid >= 1900: refill_balance = 5.00
+            
+            log.info(f"STRIPE RENEWAL: Replenishing ${refill_balance} for {supabase_user_id}")
+            
+            auth_module.supabase.table("billing_profiles").update({
+                "compute_credit_balance": refill_balance,
+                "trial_ends_at": None
+            }).eq("owner_id", supabase_user_id).execute()
+            
+        except Exception as e:
+            log.error(f"Failed to replenish credits for {customer_id} on renewal: {e}")
+            return JSONResponse(status_code=500, content={"status": "replenishment failed"})
 
     return JSONResponse(content={"status": "success"})
 

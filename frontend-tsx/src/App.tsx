@@ -147,6 +147,7 @@ export default function App() {
   // Billing UI State
   const [billingProfile, setBillingProfile] = useState<any>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [storageUsedBytes, setStorageUsedBytes] = useState(0);
 
   // Physics Matrix
   const particles = React.useMemo(() => Array.from({ length: 30 }).map(() => ({
@@ -183,6 +184,9 @@ export default function App() {
       if (session?.user?.id) {
         supabase.from('billing_profiles').select('*').eq('owner_id', session.user.id).single()
           .then(({ data }) => setBillingProfile(data));
+        // Fetch real storage usage
+        fetch(`${cfg.coordinatorUrl}/usage`, { headers: { Authorization: `Bearer ${session.access_token}` } })
+          .then(r => r.json()).then(d => setStorageUsedBytes(d.used_bytes || 0)).catch(() => {});
       }
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -190,8 +194,11 @@ export default function App() {
       if (session?.user?.id) {
         supabase.from('billing_profiles').select('*').eq('owner_id', session.user.id).single()
           .then(({ data }) => setBillingProfile(data));
+        fetch(`${cfg.coordinatorUrl}/usage`, { headers: { Authorization: `Bearer ${session.access_token}` } })
+          .then(r => r.json()).then(d => setStorageUsedBytes(d.used_bytes || 0)).catch(() => {});
       } else {
         setBillingProfile(null);
+        setStorageUsedBytes(0);
       }
     });
     return () => subscription.unsubscribe();
@@ -1134,12 +1141,11 @@ export default function App() {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
-                    <span className="text-muted">Storage Quota</span>
-                    <span>{(billingProfile.storage_limit_bytes / (1024 ** 3)).toFixed(1)} GB</span>
+                    <span className="text-muted">Storage</span>
+                    <span>{(storageUsedBytes / (1024 ** 3)).toFixed(2)} / {(billingProfile.storage_limit_bytes / (1024 ** 3)).toFixed(0)} GB</span>
                   </div>
                   <div style={{ width: '100%', height: '4px', background: 'var(--surface-border)', borderRadius: '2px', overflow: 'hidden' }}>
-                    {/* Simulated usage strictly for UI visibility, actual limit checked on backend */}
-                    <div style={{ width: '2%', height: '100%', background: 'var(--water-1-mid)' }} />
+                    <div style={{ width: `${Math.min(100, (storageUsedBytes / billingProfile.storage_limit_bytes) * 100)}%`, height: '100%', background: (storageUsedBytes / billingProfile.storage_limit_bytes) > 0.9 ? 'var(--accent-danger)' : 'var(--accent-primary)', transition: 'width 0.3s ease' }} />
                   </div>
                 </div>
                 {billingProfile.trial_ends_at && new Date(billingProfile.trial_ends_at) > new Date() && (

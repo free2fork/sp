@@ -942,25 +942,32 @@ def backup_catalog_to_s3():
     """Upload a copy of catalog.db to S3."""
     try:
         # Use SQLite backup API for a consistent snapshot
-        import shutil
         backup_path = CATALOG_DB_PATH + ".backup"
         
+        # Connect and perform online backup
         src = sqlite3.connect(CATALOG_DB_PATH)
         dst = sqlite3.connect(backup_path)
         src.backup(dst)
         src.close()
         dst.close()
         
+        # Read the backup into memory to ensure it's seekable for Boto3/Tigris retries
+        with open(backup_path, 'rb') as f:
+            backup_data = f.read()
+        
         s3 = tigris.get_s3_client()
-        s3.upload_file(backup_path, tigris.BUCKET_NAME, CATALOG_BACKUP_KEY)
+        # Upload using the byte stream (more robust for Tigris retries)
+        import io
+        s3.put_object(Bucket=tigris.BUCKET_NAME, Key=CATALOG_BACKUP_KEY, Body=io.BytesIO(backup_data))
         
         # Also keep a timestamped version (last N rotations)
         from datetime import datetime
         ts = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
-        s3.upload_file(backup_path, tigris.BUCKET_NAME, f"backups/catalog_{ts}.db")
+        s3.put_object(Bucket=tigris.BUCKET_NAME, Key=f"backups/catalog_{ts}.db", Body=io.BytesIO(backup_data))
         
         try:
-            os.remove(backup_path)
+            if os.path.exists(backup_path):
+                os.remove(backup_path)
         except:
             pass
         
@@ -983,13 +990,14 @@ def _catalog_backup_loop():
             log.error(f"Backup loop error: {e}")
         _time.sleep(CATALOG_BACKUP_INTERVAL)
 
-# Run restore on startup, then start background backup thread
-restore_catalog_from_s3()
-
-import threading
-_backup_thread = threading.Thread(target=_catalog_backup_loop, daemon=True)
-_backup_thread.start()
-log.info(f"Catalog backup thread started (interval={CATALOG_BACKUP_INTERVAL}s)")
+@app.on_event("startup")
+async def startup_event():
+    """Run restore on startup, then start background backup thread once."""
+    restore_catalog_from_s3()
+    import threading
+    _backup_thread = threading.Thread(target=_catalog_backup_loop, daemon=True)
+    _backup_thread.start()
+    log.info(f"Catalog backup thread started (interval={CATALOG_BACKUP_INTERVAL}s)")
 # ------------------------------------------------------------------------------
 
 # -- Rate Limiting & Query Timeout ---------------------------------------------
@@ -3061,13 +3069,16 @@ async def stripe_webhook(request: Request):
     except stripe.error.SignatureVerificationError as e:
         log.error("Invalid Stripe signature")
         raise HTTPException(status_code=400, detail="Invalid signature")
+    # Log event type for debugging replenishment
+    log.info(f"STRIPE WEBHOOK: {event['type']}")
 
     # Handle successful checkout
     if event['type'] == 'checkout.session.completed':
         session = event['data']['object']
-        client_ref_id = session.get('client_reference_id') 
-        customer_id = session.get('customer')
-        amount_total = session.get('amount_total', 0) 
+        # Use getattr as StripeObjects may not support .get()
+        client_ref_id = getattr(session, 'client_reference_id', None)
+        customer_id = getattr(session, 'customer', None)
+        amount_total = getattr(session, 'amount_total', 0)
 
         if not client_ref_id:
             log.warning("Detected successful checkout but no client_reference_id mapped.")
@@ -3120,13 +3131,17 @@ async def stripe_webhook(request: Request):
     # Handle subscription renewal refills
     if event['type'] == 'invoice.paid':
         invoice = event['data']['object']
-        customer_id = invoice.get('customer')
-        amount_paid = invoice.get('amount_paid', 0)
+        # Use attribute access as some Stripe Objects don't support .get()
+        customer_id = getattr(invoice, 'customer', None)
+        amount_paid = getattr(invoice, 'amount_paid', 0)
 
         try:
             # Fetch user mapping from Customer metadata
             customer = stripe.Customer.retrieve(customer_id)
-            supabase_user_id = customer.get('metadata', {}).get('supabase_user_id')
+            # Use getattr as StripeObjects may not support .get()
+            metadata = getattr(customer, 'metadata', {})
+            # Also use getattr on metadata, since it's a StripeObject too
+            supabase_user_id = getattr(metadata, 'supabase_user_id', None)
             
             if not supabase_user_id:
                 log.warning(f"Ignoring recurring payment for customer {customer_id}: no supabase_user_id in metadata.")

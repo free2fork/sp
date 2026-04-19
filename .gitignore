@@ -31,3 +31,6 @@ __pycache__/
 .env
 .env.local
 .env.*.local
+
+# Experimental / Temporary scripts
+scratch/

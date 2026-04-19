@@ -185,7 +185,7 @@ export default function App() {
         supabase.from('billing_profiles').select('*').eq('owner_id', session.user.id).single()
           .then(({ data }) => setBillingProfile(data));
         // Fetch real storage usage
-        fetch(`${cfg.coordinatorUrl}/usage`, { headers: { Authorization: `Bearer ${session.access_token}` } })
+        fetch(`${cfg.coord}/usage`, { headers: { Authorization: `Bearer ${session.access_token}` } })
           .then(r => r.json()).then(d => setStorageUsedBytes(d.used_bytes || 0)).catch(() => {});
       }
     });
@@ -194,7 +194,7 @@ export default function App() {
       if (session?.user?.id) {
         supabase.from('billing_profiles').select('*').eq('owner_id', session.user.id).single()
           .then(({ data }) => setBillingProfile(data));
-        fetch(`${cfg.coordinatorUrl}/usage`, { headers: { Authorization: `Bearer ${session.access_token}` } })
+        fetch(`${cfg.coord}/usage`, { headers: { Authorization: `Bearer ${session.access_token}` } })
           .then(r => r.json()).then(d => setStorageUsedBytes(d.used_bytes || 0)).catch(() => {});
       } else {
         setBillingProfile(null);

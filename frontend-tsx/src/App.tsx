@@ -928,9 +928,9 @@ export default function App() {
 
           {showLanding && !session && (
             <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '16px', alignItems: 'center' }}>
-              <div style={{ padding: '6px 14px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--accent-primary)', fontSize: '13px', fontWeight: 600, color: 'var(--accent-primary)', cursor: 'pointer' }}>50 GB | STARTER $7.99</div>
-              <div style={{ padding: '6px 14px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--accent-primary)', fontSize: '13px', fontWeight: 600, color: 'var(--accent-primary)', cursor: 'pointer', opacity: 0.85 }}>100 GB | PRO $14.99</div>
-              <div style={{ padding: '6px 14px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--accent-primary)', fontSize: '13px', fontWeight: 600, color: 'var(--accent-primary)', cursor: 'pointer', opacity: 0.7 }}>1 TB | TEAM / 10 seats</div>
+              <div style={{ padding: '6px 14px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--accent-primary)', fontSize: '13px', fontWeight: 600, color: 'var(--accent-primary)', cursor: 'pointer' }}>50 GB | STARTER $12.99</div>
+              <div style={{ padding: '6px 14px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--accent-primary)', fontSize: '13px', fontWeight: 600, color: 'var(--accent-primary)', cursor: 'pointer', opacity: 0.85 }}>100 GB | PRO $19.99</div>
+              <div style={{ padding: '6px 14px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--accent-primary)', fontSize: '13px', fontWeight: 600, color: 'var(--accent-primary)', cursor: 'pointer', opacity: 0.7 }}>1 TB | TEAM $119.99 / 10 seats</div>
             </div>
           )}
 
@@ -1942,19 +1942,19 @@ export default function App() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
               <div className="glass-panel" style={{ padding: '24px', background: 'rgba(255,255,255,0.02)' }}>
                 <h3 style={{ fontSize: '18px', marginBottom: '4px', color: 'var(--accent-primary)' }}>Starter</h3>
-                <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '16px' }}>$7.99<span style={{ fontSize: '14px', color: 'var(--text-muted)', fontWeight: 'normal' }}> / mo</span></div>
+                <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '16px' }}>$12.99<span style={{ fontSize: '14px', color: 'var(--text-muted)', fontWeight: 'normal' }}> / mo</span></div>
                 <ul className="text-muted" style={{ fontSize: '13px', paddingLeft: '16px', display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
                   <li>50 GB Storage Max</li>
                   <li>$0.028 Compute per 60s</li>
                   <li>7-Day Free Trial</li>
                 </ul>
                 <button className="btn-secondary" style={{ width: '100%', justifyContent: 'center' }} onClick={() => window.open(`https://buy.stripe.com/fZu14o8xB9lMeS88Q13cc03${session?.user?.id ? '?client_reference_id=' + session.user.id : ''}`, "_blank")}>
-                  {billingProfile?.plan_tier === 'starter' && !isTrialExpired ? 'Current Plan' : 'Subscribe ($7.99)'}
+                  {billingProfile?.plan_tier === 'starter' && !isTrialExpired ? 'Current Plan' : 'Subscribe ($12.99)'}
                 </button>
               </div>
               <div className="glass-panel" style={{ padding: '24px', background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.3)' }}>
                 <h3 style={{ fontSize: '18px', marginBottom: '4px', color: 'var(--accent-success)' }}>Pro</h3>
-                <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '16px' }}>$14.99<span style={{ fontSize: '14px', color: 'var(--text-muted)', fontWeight: 'normal' }}> / mo</span></div>
+                <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '16px' }}>$19.99<span style={{ fontSize: '14px', color: 'var(--text-muted)', fontWeight: 'normal' }}> / mo</span></div>
                 <div className="glass-pill" style={{ padding: '4px 10px', fontSize: '10px', display: 'inline-block', marginBottom: '12px', color: '#8B5CF6' }}>100 GB STORAGE</div>
                 <ul className="text-muted" style={{ fontSize: '13px', paddingLeft: '16px', display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
                   <li>100 GB Storage Max</li>
@@ -1965,7 +1965,7 @@ export default function App() {
               </div>
               <div className="glass-panel" style={{ padding: '24px', background: 'rgba(0,153,204,0.05)' }}>
                 <h3 style={{ fontSize: '18px', marginBottom: '4px', color: 'var(--accent-primary)' }}>Team</h3>
-                <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '16px' }}>$99.00<span style={{ fontSize: '14px', color: 'var(--text-muted)', fontWeight: 'normal' }}> / 10 seats</span></div>
+                <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '16px' }}>$119.99<span style={{ fontSize: '14px', color: 'var(--text-muted)', fontWeight: 'normal' }}> / 10 seats</span></div>
                 <div className="glass-pill" style={{ padding: '4px 10px', fontSize: '10px', display: 'inline-block', marginBottom: '12px', color: '#F59E0B' }}>1 TB STORAGE</div>
                 <ul className="text-muted" style={{ fontSize: '13px', paddingLeft: '16px', display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
                   <li>1 TB Storage Pool</li>
